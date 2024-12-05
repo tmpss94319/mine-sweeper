@@ -47,60 +47,9 @@
         // ==============================命名變數======================================
         const blocks = document.querySelectorAll(".block"); //所有方塊
         const unOpenedBlocks = document.querySelectorAll(".unOpened"); //所有未打開的方塊
-        const random_numbers = randomNumbers(10); // 生成10個隨機數字的陣列
+        
 
-        // =====================生成地雷
-        let mineList = [];
-        random_numbers.forEach((num) => {
-            mineList.push(blocks[num - 1]); // 透過隨機生成的數字抓10個div元素到mineList裡
-        });
-        console.log('mineList:', mineList);
-
-        // =====================將每個地雷的周圍八個DOM元素都加入surrBlocks陣列中
-        let surrBlocks = [];
-        mineList.forEach((mine) => {
-            mine.classList.forEach((className) => {
-                if (className.includes("block_")) {
-
-                    const matched = className.match(/block_(\d+)_(\d+)/); // 用match函數配合樣板字串來抓地雷的座標
-                    let mineRow = parseInt(matched[1]); // 第幾橫排
-                    let mineCol = parseInt(matched[2]); // 第幾直排
-
-                    const directions = [
-                        [-1, -1],
-                        [-1, 0],
-                        [-1, 1],
-                        [0, -1],
-                        [0, 1],
-                        [1, -1],
-                        [1, 0],
-                        [1, 1],
-                    ];
-
-                    directions.forEach((direction) => {
-                        console.log('direction:', direction);
-                        let newRow = mineRow + direction[0];
-                        let newCol = mineCol + direction[1];
-                        let newClassName = `block_${newRow}_${newCol}`;
-                        console.log('newClassName:', newClassName);
-
-                        const newBlock = document.querySelector(`.${newClassName}`); // 座標位移之後的方塊
-                        console.log('newBlock:', newBlock);
-                        if (newBlock) { surrBlocks.push(newBlock) } // 如果有找到該DOM元素，才加進方塊surrBlocks陣列中
-                    });
-                }
-            });
-        });
-        console.log('surrBlocks:', surrBlocks);
-
-        unOpenedBlocks.forEach((unOpened) => {
-            unOpened.addEventListener("click", (e) => {
-                openBlock(e.target);
-            });
-        });
-
-        // =========== functions here ==============
-
+        // =====================================================生成地雷========================================================
         function randomNumbers(length) {
             let numbers = [];
             let i = 1;
@@ -114,6 +63,36 @@
             return numbers;
         }
 
+        const random_numbers = randomNumbers(10); // 生成10個隨機數字的陣列
+        let mineList = [];
+        random_numbers.forEach((num) => {
+            mineList.push(blocks[num - 1]); // 透過隨機生成的數字抓10個div元素到mineList裡
+        });
+        console.log('mineList:', mineList);
+
+        // =====================將每個地雷的周圍八個DOM元素都加入nearMineBlocks陣列中
+        let nearMineBlocks = [];
+        mineList.forEach((mine) => {
+            getSurrBlocks(nearMineBlocks, mine)
+        });
+        console.log('nearMineBlocks:', nearMineBlocks);
+
+        unOpenedBlocks.forEach((unOpened) => {
+            unOpened.addEventListener("click", (e) => {
+                handleBlockClicked(e.target);
+            });
+        });
+
+
+        
+
+        
+        
+        // ====================================手動點擊方塊========================================
+        // 待處理的白方塊
+        let pendingWhiteBlocks = [];
+
+        // 用於計算地雷旁數字的函數
         function countRepeat(array, target) {
             let count = 0;
             array.forEach(element => {
@@ -123,35 +102,84 @@
             });
             return count;
         }
-        
-        // ========================開啟方塊的函數
-        function openBlock(block) {
-                // 如果是地雷
-                if (mineList.includes(block)) { 
-                    block.style.backgroundImage =
-                        "url('./assets/images/bombRed.png')";
-                    block.style.backgroundSize = "contain";
-                }
 
-                // 如果是數字
-                if(surrBlocks.includes(block) && !mineList.includes(block)) { 
-                    block.style.backgroundImage =
-                        `url('./assets/images/${countRepeat(surrBlocks, block)}.png')`;
-                    block.style.backgroundSize = "contain";
-                }
-
-                console.log('block.className:', block.className);
-                block.classList.remove("unOpened");
-                block.classList.add("opened");
+        // 處理地雷被手動點擊的邏輯
+        function openMine(mine){
+            mine.style.backgroundImage = "url('./assets/images/bombRed.png')";
+            mine.style.backgroundSize = "contain";
+            mine.classList.remove("unOpened");
+            mine.classList.add("opened");
         }
 
-        function getSurrBlocks (surrArray, block) {
-            block.classList.forEach((className) => {
+        // 處理數字方塊被手動點擊的邏輯
+        function openNumberBlock(numberBlock){
+            numberBlock.style.backgroundImage = `url('./assets/images/${countRepeat(nearMineBlocks, numberBlock)}.png')`;
+            numberBlock.style.backgroundSize = "contain";
+            numberBlock.classList.remove("unOpened");
+            numberBlock.classList.add("opened");
+        }
+
+
+        // 方塊被手動點擊時的函數
+        function handleBlockClicked(block) {
+                
+            // 如果是地雷
+            if (mineList.includes(block)) { 
+                openMine(block)
+            }
+            // 如果是數字
+            else if(nearMineBlocks.includes(block) && !mineList.includes(block)) { 
+                openNumberBlock(block)
+            }
+            // 如果是白方塊
+            else{
+                pendingWhiteBlocks.push(block);
+            }
+            console.log('block.className:', block.className);
+        }
+
+
+        // 用周圍方塊不斷蔓延的方式來開啟多個方塊
+        if(pendingWhiteBlocks.length > 0){
+            pendingWhiteBlocks.forEach((processingWhiteBlock)=>{
+                
+                //抓取此白方塊的周圍方塊 
+                let surrBlocks = [];
+                getSurrBlocks(surrBlocks, processingWhiteBlock)
+
+                // 處理周圍方塊
+                surrBlocks.forEach((surrBlock) => {
+                    
+                    // 如果已被開啟
+                    if(surrBlock.className.includes("opened")){
+
+                    }
+                    // 如果是數字
+                    else if(nearMineBlocks.includes(surrBlock) && !mineList.includes(surrBlock)) { 
+                        openNumberBlock(surrBlock);
+                    }
+                    // 如果是未開啟的白方塊，則加入待處理白方塊的陣列中
+                    else{
+                        pendingWhiteBlocks.push(surrBlock);
+                    }
+                });
+                
+                processingWhiteBlock.classList.remove("unOpened");
+                processingWhiteBlock.classList.add("opened");
+                pendingWhiteBlocks = pendingWhiteBlocks.filter(block => block !== processingWhiteBlock); // 將處理完的白方塊從待處理陣列中移除
+            })
+        }
+
+
+        // ==================用來抓周圍方塊的函數，第一個參數為存放抓到方塊的陣列，第二個參數為中心方塊===================
+        function getSurrBlocks (blocksArray, centerBlock) {
+            centerBlock.classList.forEach((className) => {
                 if (className.includes("block_")) {
                     const matched = className.match(/block_(\d+)_(\d+)/); // 用match函數配合樣板字串來抓座標
-                    let blockRow = parseInt(matched[1]);
-                    let blockCol = parseInt(matched[2]);
+                    let centerBlockRow = parseInt(matched[1]); // 由上數來第幾個
+                    let centerBlockCol = parseInt(matched[2]); // 由左數來第幾個
 
+                    // 用八個方向來抓周圍方塊
                     const directions = [
                         [-1, -1],
                         [-1, 0],
@@ -165,11 +193,11 @@
 
                     directions.forEach((direction) => {
                         console.log('direction', direction);
-                        let newRow = blockRow + direction[0];
-                        let newCol = blockCol + direction[1];
+                        let newRow = centerBlockRow + direction[0];
+                        let newCol = centerBlockCol + direction[1];
                         let newClassName = `block_${newRow}_${newCol}`;
-                        const newBlock = document.querySelector(`.${newClassName}`);
-                        if (newBlock) { surrBlocks.push(newBlock) }
+                        const newBlock = document.querySelector(`.${newClassName}`); // 座標位移之後的方塊
+                        if (newBlock) { blocksArray.push(newBlock) } // 如果有找到該DOM元素，才加進blocksArray陣列中
                     });
                 }
             });
