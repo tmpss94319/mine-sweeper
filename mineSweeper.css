@@ -20,7 +20,19 @@
     border: 4px solid;
     border-color: #fff #555 #555 #fff;
 }
+
+.flag{
+    background-image: url("/assets/images/flag.png");
+    background-size: contain;
+}
+
+.questionMark{
+    background-image: url("/assets/images/question-mark.png");
+    background-size: contain;
+}
+
 .opened{
     background-color: #8895b4;
     border: 4px solid #444;
 }
+

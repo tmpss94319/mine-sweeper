@@ -46,7 +46,22 @@
     <script>
         // ==============================命名變數======================================
         const blocks = document.querySelectorAll(".block"); //所有方塊
-        const unOpenedBlocks = document.querySelectorAll(".unOpened"); //所有未打開的方塊
+        const surround = [
+                        [-1, -1],
+                        [-1, 0],
+                        [-1, 1],
+                        [0, -1],
+                        [0, 1],
+                        [1, -1],
+                        [1, 0],
+                        [1, 1],
+                    ];
+        const cross = [
+                        [-1, 0],
+                        [0, -1],
+                        [0, 1],
+                        [1, 0],
+                    ]
         
 
         // =====================================================生成地雷========================================================
@@ -73,13 +88,22 @@
         // =====================將每個地雷的周圍八個DOM元素都加入nearMineBlocks陣列中
         let nearMineBlocks = [];
         mineList.forEach((mine) => {
-            getSurrBlocks(nearMineBlocks, mine)
+            getNearbyBlocks(nearMineBlocks, mine, surround)
         });
         console.log('nearMineBlocks:', nearMineBlocks);
 
-        unOpenedBlocks.forEach((unOpened) => {
-            unOpened.addEventListener("click", (e) => {
-                handleBlockClicked(e.target);
+        blocks.forEach((block) => {
+            block.addEventListener("click", (e) => {
+                if(e.target.classList.contains("unOpened")){
+                    handleBlockClicked(e.target);
+                }
+            });
+
+            block.addEventListener("contextmenu", (e) => {
+                e.preventDefault();
+                if(e.target.classList.contains("unOpened")){
+                    handleBlockRightClicked(e.target);
+                }    
             });
         });
 
@@ -88,7 +112,15 @@
 
         
         
-        // ====================================手動點擊方塊========================================
+        // ====================================左鍵點擊方塊========================================
+        // 將class改成已開啟方塊該有的class
+        function changeClassToOpen(block){
+            block.classList.remove("unOpened");
+            block.classList.add("opened");
+            block.classList.remove("flag");
+            block.classList.remove("questionMark");
+        }
+
         // 待處理的白方塊
         let pendingWhiteBlocks = [];
 
@@ -103,29 +135,30 @@
             return count;
         }
 
-        // 處理地雷被手動點擊的邏輯
-        function openMine(mine){
-            mine.style.backgroundImage = "url('./assets/images/bombRed.png')";
-            mine.style.backgroundSize = "contain";
-            mine.classList.remove("unOpened");
-            mine.classList.add("opened");
+        // 處理地雷被左鍵點擊的邏輯
+        async function openMine(){
+            await mineList.forEach(mine=>{
+                mine.style.backgroundImage = "url('./assets/images/bombRed.png')";
+                mine.style.backgroundSize = "contain";
+                changeClassToOpen(mine);
+            })
+            alert("遊戲結束！");
         }
 
-        // 處理數字方塊被手動點擊的邏輯
+        // 處理數字方塊被左鍵點擊的邏輯
         function openNumberBlock(numberBlock){
             numberBlock.style.backgroundImage = `url('./assets/images/${countRepeat(nearMineBlocks, numberBlock)}.png')`;
             numberBlock.style.backgroundSize = "contain";
-            numberBlock.classList.remove("unOpened");
-            numberBlock.classList.add("opened");
+            changeClassToOpen(numberBlock);
         }
 
 
-        // 方塊被手動點擊時的函數
+        // 方塊被左鍵點擊時的函數
         function handleBlockClicked(block) {
                 
             // 如果是地雷
             if (mineList.includes(block)) { 
-                openMine(block)
+                openMine()
             }
             // 如果是數字
             else if(nearMineBlocks.includes(block) && !mineList.includes(block)) { 
@@ -133,25 +166,31 @@
             }
             // 如果是白方塊
             else{
-                pendingWhiteBlocks.push(block);
+                // pendingWhiteBlocks.push(block);
+                processWhiteBlock(block);
             }
             console.log('block.className:', block.className);
         }
 
 
         // 用周圍方塊不斷蔓延的方式來開啟多個方塊
-        if(pendingWhiteBlocks.length > 0){
-            pendingWhiteBlocks.forEach((processingWhiteBlock)=>{
+        function processWhiteBlock(whiteBlock){
+            pendingWhiteBlocks.push(whiteBlock);
+
+            while (pendingWhiteBlocks.length > 0 ) {
                 
-                //抓取此白方塊的周圍方塊 
+                // 抓取待處理白方塊陣列中的第一個 
+                const currentWhiteblock = pendingWhiteBlocks.shift();
+                
+                // 抓取此白方塊的周圍方塊 
                 let surrBlocks = [];
-                getSurrBlocks(surrBlocks, processingWhiteBlock)
+                getNearbyBlocks(surrBlocks, currentWhiteblock, surround)
 
                 // 處理周圍方塊
                 surrBlocks.forEach((surrBlock) => {
                     
                     // 如果已被開啟
-                    if(surrBlock.className.includes("opened")){
+                    if(surrBlock.classList.contains("opened")){
 
                     }
                     // 如果是數字
@@ -163,33 +202,32 @@
                         pendingWhiteBlocks.push(surrBlock);
                     }
                 });
-                
-                processingWhiteBlock.classList.remove("unOpened");
-                processingWhiteBlock.classList.add("opened");
-                pendingWhiteBlocks = pendingWhiteBlocks.filter(block => block !== processingWhiteBlock); // 將處理完的白方塊從待處理陣列中移除
-            })
+
+                // 將處理完的白方塊變成已開啟狀態
+                changeClassToOpen(currentWhiteblock);
+            }
+        }
+
+        // ===================================插旗功能==============================================
+        function handleBlockRightClicked(block){
+            if(block.classList.contains("flag")){
+                block.classList.remove("flag");
+                block.classList.add("questionMark");
+            }else if(block.classList.contains("questionMark")){
+                block.classList.remove("questionMark");
+            }else{
+                block.classList.add("flag");
+            }
         }
 
 
         // ==================用來抓周圍方塊的函數，第一個參數為存放抓到方塊的陣列，第二個參數為中心方塊===================
-        function getSurrBlocks (blocksArray, centerBlock) {
+        function getNearbyBlocks (blocksArray, centerBlock, directions) {
             centerBlock.classList.forEach((className) => {
                 if (className.includes("block_")) {
                     const matched = className.match(/block_(\d+)_(\d+)/); // 用match函數配合樣板字串來抓座標
                     let centerBlockRow = parseInt(matched[1]); // 由上數來第幾個
                     let centerBlockCol = parseInt(matched[2]); // 由左數來第幾個
-
-                    // 用八個方向來抓周圍方塊
-                    const directions = [
-                        [-1, -1],
-                        [-1, 0],
-                        [-1, 1],
-                        [0, -1],
-                        [0, 1],
-                        [1, -1],
-                        [1, 0],
-                        [1, 1],
-                    ];
 
                     directions.forEach((direction) => {
                         console.log('direction', direction);

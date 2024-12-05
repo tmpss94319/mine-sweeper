@@ -9,31 +9,27 @@
     <script>
         let myArray = [];
         let count = 0;
-const processedSet = new Set(); // 記錄已處理的元素
 
-// 自定義函式來模擬 push 並觸發行為
-function addToArray(element) {
-  myArray.push(element);
-  console.log("觸發 effect:", myArray);
+        // 自定義函式來模擬 push 並觸發行為
+        function addToArray(element) {
+        myArray.push(element);
+        console.log("觸發 effect:", myArray);
 
-  // 使用 while 處理未處理的元素
-  
-  while (myArray.some(el => !processedSet.has(el))) {
-    const unprocessed = myArray.filter(el => !processedSet.has(el));
-    unprocessed.forEach(el => {
-      console.log("處理元素:", el);
-      processedSet.add(el);
-      myArray = myArray.filter(ele => ele != el)
-      count++;
-      if (count < 10) {
-        addToArray(el + 1);
-      }
-    });
-  }
-}
+        // 使用 while 處理未處理的元素
+        
+        while (myArray.length > 0) {
+            const el = myArray.shift();
+            console.log("處理元素:", el);
+            myArray = myArray.filter(ele => ele != el)
+            count++;
+            if (count < 10) {
+                addToArray(el + 1);
+            }
+        }
+        }
 
-// 測試
-addToArray(1);
+        // 測試
+        addToArray(1);
     </script>
 </body>
 </html>
