@@ -19,15 +19,15 @@
 </head>
 
 <body>
-    <div class="mine-container"></div>
+    <div class="blocks-container"></div>
 
     <script>
-        const mineContainer = document.querySelector(".mine-container");
+        const blocksContainer = document.querySelector(".blocks-container");
         for (let i = 1; i <= 9; i++) {
             for (let j = 1; j <= 9; j++) {
                 const div = document.createElement("div");
-                div.className = `mine-block unSwept mine-block_${i}_${j}`;
-                mineContainer.appendChild(div);
+                div.className = `block unOpened block_${i}_${j}`;
+                blocksContainer.appendChild(div);
             }
         }
     </script>
@@ -44,28 +44,27 @@
         integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
 
     <script>
-        const blocks = document.querySelectorAll(".mine-block"); //所有方塊
-        const unSwepts = document.querySelectorAll(".unSwept"); //所有未打開的方塊
-        const rn = randomNumbers(10); // 生成10個隨機數字的陣列
+        // ==============================命名變數======================================
+        const blocks = document.querySelectorAll(".block"); //所有方塊
+        const unOpenedBlocks = document.querySelectorAll(".unOpened"); //所有未打開的方塊
+        const random_numbers = randomNumbers(10); // 生成10個隨機數字的陣列
 
+        // =====================生成地雷
         let mineList = [];
-        rn.forEach((num) => {
+        random_numbers.forEach((num) => {
             mineList.push(blocks[num - 1]); // 透過隨機生成的數字抓10個div元素到mineList裡
         });
-        console.log(mineList);
+        console.log('mineList:', mineList);
 
+        // =====================將每個地雷的周圍八個DOM元素都加入surrBlocks陣列中
         let surrBlocks = [];
         mineList.forEach((mine) => {
             mine.classList.forEach((className) => {
-                if (className.includes("mine-block_")) {
-                    // const splited = className.split("");
-                    // let newSplited = splited.slice();
-                    // newSplited[newSplited.length - 3] = (parseInt(newSplited[newSplited.length - 3]) - 1).toString();
-                    // let newClassName = newSplited.join("");
+                if (className.includes("block_")) {
 
-                    const matched = className.match(/mine-block_(\d+)_(\d+)/); // 用match函數配合樣板字串來抓座標
-                    let mineRow = parseInt(matched[1]);
-                    let mineCol = parseInt(matched[2]);
+                    const matched = className.match(/block_(\d+)_(\d+)/); // 用match函數配合樣板字串來抓地雷的座標
+                    let mineRow = parseInt(matched[1]); // 第幾橫排
+                    let mineCol = parseInt(matched[2]); // 第幾直排
 
                     const directions = [
                         [-1, -1],
@@ -79,23 +78,23 @@
                     ];
 
                     directions.forEach((direction) => {
-                        console.log(direction);
+                        console.log('direction:', direction);
                         let newRow = mineRow + direction[0];
                         let newCol = mineCol + direction[1];
-                        let newClassName = `mine-block_${newRow}_${newCol}`;
-                        console.log(newClassName);
+                        let newClassName = `block_${newRow}_${newCol}`;
+                        console.log('newClassName:', newClassName);
 
-                        const newBlock = document.querySelector(`.${newClassName}`);
-                        console.log(newBlock);
-                        if (newBlock) { surrBlocks.push(newBlock) }
+                        const newBlock = document.querySelector(`.${newClassName}`); // 座標位移之後的方塊
+                        console.log('newBlock:', newBlock);
+                        if (newBlock) { surrBlocks.push(newBlock) } // 如果有找到該DOM元素，才加進方塊surrBlocks陣列中
                     });
                 }
             });
         });
-        console.log(surrBlocks);
+        console.log('surrBlocks:', surrBlocks);
 
-        unSwepts.forEach((unSwept) => {
-            unSwept.addEventListener("click", (e) => {
+        unOpenedBlocks.forEach((unOpened) => {
+            unOpened.addEventListener("click", (e) => {
                 openBlock(e.target);
             });
         });
@@ -125,27 +124,31 @@
             return count;
         }
         
+        // ========================開啟方塊的函數
         function openBlock(block) {
-                if (mineList.includes(block)) { // 如果是地雷
+                // 如果是地雷
+                if (mineList.includes(block)) { 
                     block.style.backgroundImage =
                         "url('./assets/images/bombRed.png')";
                     block.style.backgroundSize = "contain";
-                }else if(surrBlocks.includes(block) && !mineList.includes(block)) { // 如果是數字
+                }
+
+                // 如果是數字
+                if(surrBlocks.includes(block) && !mineList.includes(block)) { 
                     block.style.backgroundImage =
                         `url('./assets/images/${countRepeat(surrBlocks, block)}.png')`;
                     block.style.backgroundSize = "contain";
-                }else{ //都不是的話
-                    
                 }
-                console.log(block.className);
-                block.classList.remove("unSwept");
-                block.classList.add("swept");
+
+                console.log('block.className:', block.className);
+                block.classList.remove("unOpened");
+                block.classList.add("opened");
         }
 
         function getSurrBlocks (surrArray, block) {
             block.classList.forEach((className) => {
-                if (className.includes("mine-block_")) {
-                    const matched = className.match(/mine-block_(\d+)_(\d+)/); // 用match函數配合樣板字串來抓座標
+                if (className.includes("block_")) {
+                    const matched = className.match(/block_(\d+)_(\d+)/); // 用match函數配合樣板字串來抓座標
                     let blockRow = parseInt(matched[1]);
                     let blockCol = parseInt(matched[2]);
 
@@ -161,10 +164,10 @@
                     ];
 
                     directions.forEach((direction) => {
-                        console.log(direction);
+                        console.log('direction', direction);
                         let newRow = blockRow + direction[0];
                         let newCol = blockCol + direction[1];
-                        let newClassName = `mine-block_${newRow}_${newCol}`;
+                        let newClassName = `block_${newRow}_${newCol}`;
                         const newBlock = document.querySelector(`.${newClassName}`);
                         if (newBlock) { surrBlocks.push(newBlock) }
                     });
