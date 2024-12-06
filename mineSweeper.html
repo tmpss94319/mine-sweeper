@@ -21,9 +21,9 @@
 <body>
     
     <div class="d-flex flex-column justify-content-center align-items-center mt-3">
-        <h5 class="timer">00:00:00</h5>
+        <h2 class="timer">00:00:00</h2>
         <div class="blocks-container"></div>
-        <button class="restartButton mt-3">重新開始</button>
+        <button class="restartButton mt-3 py-1 px-3">重新開始</button>
     <div>
     
 
@@ -70,7 +70,7 @@
                     ]
         
         let gameOver = false;
-        let mineAmount = 3; 
+        let mineAmount = 10; 
 
         // =====================================================生成地雷========================================================
         function randomNumbers(length) {
@@ -153,12 +153,12 @@
                     changeClassToOpen(mine);
                 })
                 
-                setTimeout(resolve, 0); // 使畫面能先被更新
+                setTimeout(resolve, 100); // 使畫面能先被更新
             });
 
             await revealAllMines;
             alert("你輸了！");
-            gameOver = true;
+            endGame();
         }
 
         // 處理數字方塊被左鍵點擊的邏輯
@@ -171,6 +171,11 @@
 
         // 方塊被左鍵點擊時的函數
         async function handleBlockClicked(block) {
+            // 啟用計時器
+            if (!isTiming && !gameOver){
+                isTiming = true;
+                startTiming();
+            }
                 
             // 如果是地雷
             if (mineList.includes(block)) { 
@@ -180,26 +185,26 @@
             else if(nearMineBlocks.includes(block) && !mineList.includes(block)) { 
                 const dealNumberBlock = new Promise((resolve) => {
                     openNumberBlock(block);
-                    setTimeout(resolve, 0);
+                    setTimeout(resolve, 100);
                 })
                 
                 await dealNumberBlock;
                 if(!gameOver && document.querySelectorAll(".unOpened").length == mineAmount){
                     alert("你贏了！");
-                    gameOver = true;
+                    endGame();
                 }   
             }
             // 如果是白方塊
             else{
                 const dealWhiteBlocks = new Promise((resolve) => {
                     processWhiteBlock(block);
-                    setTimeout(resolve, 0);
+                    setTimeout(resolve, 100);
                 })
                 
                 await dealWhiteBlocks;
                 if(!gameOver && document.querySelectorAll(".unOpened").length == mineAmount){
                     alert("你贏了！");
-                    gameOver = true;
+                    endGame();
                 }   
             }
             console.log('block.className:', block.className);
@@ -253,7 +258,6 @@
             }
         }
 
-
         // ==================用來抓周圍方塊的函數，第一個參數為存放抓到方塊的陣列，第二個參數為中心方塊===================
         function getNearbyBlocks (blocksArray, centerBlock, directions) {
             centerBlock.classList.forEach((className) => {
@@ -274,6 +278,28 @@
             });
         }
 
+        // ===================================計時器功能=====================================
+        let isTiming = false;
+        let startTime = Date.now();
+
+        function startTiming() {
+            startTime = Date.now();
+            timerInterval = setInterval(timing, 100);
+        }
+
+        function timing() {
+            let seconds = Math.floor(((Date.now() - startTime) / 1000) % 60).toString().padStart(2, '0');
+            let minutes = Math.floor(((Date.now() - startTime) / 60000) % 60).toString().padStart(2, '0');
+            let hours = Math.floor((Date.now() - startTime) / 3600000).toString().padStart(2, '0');
+            document.querySelector(".timer").innerHTML = `${hours}:${minutes}:${seconds}`;
+        }
+
+        // =================================== 遊戲結束 ======================================
+        function endGame() {
+            gameOver = true;
+            clearInterval(timerInterval);
+        }
+        
         // =================================== 重開一局 =====================================
         document.querySelector(".restartButton").addEventListener("click",() => {
             location.reload();

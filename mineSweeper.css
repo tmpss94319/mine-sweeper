@@ -1,7 +1,5 @@
-*{
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+body{
+    background-color: #050050;
 }
 
 .block{
@@ -36,3 +34,12 @@
     border: 4px solid #444;
 }
 
+@font-face {
+    font-family: 'digital7';
+    src: url('/assets/fonts/digital7/digital-7.ttf');
+}
+
+.timer {
+    font-family: 'digital7';
+    color: #fff;
+}
