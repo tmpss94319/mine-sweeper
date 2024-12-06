@@ -20,10 +20,15 @@
 
 <body>
     
-    <div class="d-flex flex-column justify-content-center align-items-center mt-3">
+    <div class="main-container">
+        <h1 class="myTitle">踩地雷-初級</h1>
         <h2 class="timer">00:00:00</h2>
         <div class="blocks-container"></div>
-        <button class="restartButton mt-3 py-1 px-3">重新開始</button>
+        <button class="restartButton">重新開始</button>
+        <div class="popUpBox">
+            <h2 class="pop-message">你輸了！</h2>
+            <button class="pop-confirm">確定</button>
+        </div>
     <div>
     
 
@@ -70,7 +75,7 @@
                     ]
         
         let gameOver = false;
-        let mineAmount = 10; 
+        let mineAmount = 10; // 地雷數量 
 
         // =====================================================生成地雷========================================================
         function randomNumbers(length) {
@@ -157,8 +162,7 @@
             });
 
             await revealAllMines;
-            alert("你輸了！");
-            endGame();
+            endGame(false);
         }
 
         // 處理數字方塊被左鍵點擊的邏輯
@@ -190,8 +194,7 @@
                 
                 await dealNumberBlock;
                 if(!gameOver && document.querySelectorAll(".unOpened").length == mineAmount){
-                    alert("你贏了！");
-                    endGame();
+                    endGame(true);
                 }   
             }
             // 如果是白方塊
@@ -203,8 +206,7 @@
                 
                 await dealWhiteBlocks;
                 if(!gameOver && document.querySelectorAll(".unOpened").length == mineAmount){
-                    alert("你贏了！");
-                    endGame();
+                    endGame(true);
                 }   
             }
             console.log('block.className:', block.className);
@@ -295,11 +297,22 @@
         }
 
         // =================================== 遊戲結束 ======================================
-        function endGame() {
+        const popUpBox = document.querySelector(".popUpBox");
+        const popUpMessage = document.querySelector(".pop-message");
+        const popUpBtn = document.querySelector(".pop-confirm"); 
+        
+        function endGame(result) {
             gameOver = true;
             clearInterval(timerInterval);
+            popUpBox.style.display = "flex";
+            popUpMessage.innerHTML = result? "你贏了！" : "你輸了！";
         }
         
+        popUpBtn.addEventListener("click", () => {
+            popUpBox.style.display = "none";
+        });
+        
+
         // =================================== 重開一局 =====================================
         document.querySelector(".restartButton").addEventListener("click",() => {
             location.reload();
