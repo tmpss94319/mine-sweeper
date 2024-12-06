@@ -19,7 +19,11 @@
 </head>
 
 <body>
-    <div class="blocks-container"></div>
+    <div class="d-flex flex-column justify-content-center align-items-center">
+        <div class="blocks-container"></div>
+        <button class="restartButton mt-3">重新開始</button>
+    <div>
+    
 
     <script>
         const blocksContainer = document.querySelector(".blocks-container");
@@ -63,6 +67,7 @@
                         [1, 0],
                     ]
         
+        let gameOver = false; 
 
         // =====================================================生成地雷========================================================
         function randomNumbers(length) {
@@ -92,16 +97,17 @@
         });
         console.log('nearMineBlocks:', nearMineBlocks);
 
+        // ======================= 替所有方塊加上左右鍵點擊事件==================
         blocks.forEach((block) => {
             block.addEventListener("click", (e) => {
-                if(e.target.classList.contains("unOpened")){
+                if(!gameOver && e.target.classList.contains("unOpened")){
                     handleBlockClicked(e.target);
                 }
             });
 
             block.addEventListener("contextmenu", (e) => {
                 e.preventDefault();
-                if(e.target.classList.contains("unOpened")){
+                if(!gameOver && e.target.classList.contains("unOpened")){
                     handleBlockRightClicked(e.target);
                 }    
             });
@@ -136,13 +142,20 @@
         }
 
         // 處理地雷被左鍵點擊的邏輯
-        async function openMine(){
-            await mineList.forEach(mine=>{
-                mine.style.backgroundImage = "url('./assets/images/bombRed.png')";
-                mine.style.backgroundSize = "contain";
-                changeClassToOpen(mine);
-            })
+        async function openMine() {
+            const revealAllMines = new Promise((resolve)=>{
+                mineList.forEach( mine => {
+                    mine.style.backgroundImage = "url('./assets/images/bombRed.png')";
+                    mine.style.backgroundSize = "contain";
+                    changeClassToOpen(mine);
+                })
+                
+                setTimeout(resolve, 0); // 使畫面能先被更新
+            });
+
+            await revealAllMines;
             alert("遊戲結束！");
+            gameOver = true;
         }
 
         // 處理數字方塊被左鍵點擊的邏輯
@@ -158,11 +171,11 @@
                 
             // 如果是地雷
             if (mineList.includes(block)) { 
-                openMine()
+                openMine();
             }
             // 如果是數字
             else if(nearMineBlocks.includes(block) && !mineList.includes(block)) { 
-                openNumberBlock(block)
+                openNumberBlock(block);
             }
             // 如果是白方塊
             else{
@@ -240,6 +253,11 @@
                 }
             });
         }
+
+        // =================================== 重開一局 =====================================
+        document.querySelector(".restartButton").addEventListener("click",() => {
+            location.reload();
+        })
     </script>
 </body>
 
