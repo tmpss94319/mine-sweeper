@@ -19,7 +19,9 @@
 </head>
 
 <body>
-    <div class="d-flex flex-column justify-content-center align-items-center">
+    
+    <div class="d-flex flex-column justify-content-center align-items-center mt-3">
+        <h5 class="timer">00:00:00</h5>
         <div class="blocks-container"></div>
         <button class="restartButton mt-3">重新開始</button>
     <div>
@@ -67,7 +69,8 @@
                         [1, 0],
                     ]
         
-        let gameOver = false; 
+        let gameOver = false;
+        let mineAmount = 3; 
 
         // =====================================================生成地雷========================================================
         function randomNumbers(length) {
@@ -83,7 +86,7 @@
             return numbers;
         }
 
-        const random_numbers = randomNumbers(10); // 生成10個隨機數字的陣列
+        const random_numbers = randomNumbers(mineAmount); // 生成10個隨機數字的陣列
         let mineList = [];
         random_numbers.forEach((num) => {
             mineList.push(blocks[num - 1]); // 透過隨機生成的數字抓10個div元素到mineList裡
@@ -154,7 +157,7 @@
             });
 
             await revealAllMines;
-            alert("遊戲結束！");
+            alert("你輸了！");
             gameOver = true;
         }
 
@@ -167,7 +170,7 @@
 
 
         // 方塊被左鍵點擊時的函數
-        function handleBlockClicked(block) {
+        async function handleBlockClicked(block) {
                 
             // 如果是地雷
             if (mineList.includes(block)) { 
@@ -175,12 +178,29 @@
             }
             // 如果是數字
             else if(nearMineBlocks.includes(block) && !mineList.includes(block)) { 
-                openNumberBlock(block);
+                const dealNumberBlock = new Promise((resolve) => {
+                    openNumberBlock(block);
+                    setTimeout(resolve, 0);
+                })
+                
+                await dealNumberBlock;
+                if(!gameOver && document.querySelectorAll(".unOpened").length == mineAmount){
+                    alert("你贏了！");
+                    gameOver = true;
+                }   
             }
             // 如果是白方塊
             else{
-                // pendingWhiteBlocks.push(block);
-                processWhiteBlock(block);
+                const dealWhiteBlocks = new Promise((resolve) => {
+                    processWhiteBlock(block);
+                    setTimeout(resolve, 0);
+                })
+                
+                await dealWhiteBlocks;
+                if(!gameOver && document.querySelectorAll(".unOpened").length == mineAmount){
+                    alert("你贏了！");
+                    gameOver = true;
+                }   
             }
             console.log('block.className:', block.className);
         }
