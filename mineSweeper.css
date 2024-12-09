@@ -31,12 +31,12 @@ body{
 }
 
 .flag{
-    background-image: url("/assets/images/flag.png");
+    background-image: url("./assets/images/flag.png");
     background-size: contain;
 }
 
 .questionMark{
-    background-image: url("/assets/images/question-mark.png");
+    background-image: url("./assets/images/question-mark.png");
     background-size: contain;
 }
 
@@ -47,7 +47,7 @@ body{
 
 @font-face {
     font-family: 'digital7';
-    src: url('/assets/fonts/digital7/digital-7.ttf');
+    src: url('./assets/fonts/digital7/digital-7.ttf');
 }
 
 .timer {
