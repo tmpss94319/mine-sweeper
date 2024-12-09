@@ -7,6 +7,7 @@
 ## 操作說明
 滑鼠左鍵：開啟方塊<br>
 滑鼠右鍵：將未開啟方塊插旗 :triangular_flag_on_post: 或標記為問號 :grey_question:
+
 [!NOTE]
 目前暫時沒有同時按住左右鍵快速開啟無插旗方塊的功能
 
