@@ -2,7 +2,7 @@
 
 這是一個踩地雷小遊戲，用於練習在完全不靠AI提供程式碼的情況下，使用原生的JavaScript(ES6)及CSS撰寫一個踩地雷小遊戲。
 
-[歡迎點此試玩:bomb:](https://github.com/tmpss94319/mine-sweeper)
+[歡迎點此試玩]( https://tmpss94319.github.io/mine-sweeper/):bomb:
 
 ## 操作說明
 滑鼠左鍵：開啟方塊<br>
@@ -13,4 +13,4 @@
 :watch:有計時器供單次計時，但暫時沒有儲存最佳紀錄的功能，需要玩家自行截圖留存
 
 ## 遊戲畫面
-("./assets/images/demo.jpg")
+(/assets/images/demo.jpg)
