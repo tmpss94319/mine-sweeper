@@ -1,6 +1,6 @@
 # 踩地雷小遊戲
 
-這是一個踩地雷小遊戲，用於練習在完全不靠AI提供程式碼的情況下，使用原生的JavaScript(ES6)及CSS撰寫一個踩地雷小遊戲。
+這是一個踩地雷小遊戲，用於練習在完全不靠AI提供程式碼的情況下，使用原生的JavaScript(ES6)及CSS完成一個專案。
 
 [歡迎點此試玩]( https://tmpss94319.github.io/mine-sweeper/):bomb:
 
